@@ -11,6 +11,9 @@ export const Table: FC = () => {
     safetySystem: undefined,
     canController: undefined,
   });
+  const [estop, setEstop] = useState();
+  const [safetySystem, setSafetySystem] = useState();
+  const [canController, setCanController] = useState();
 
   useEffect(() => {
     App.addModuleDataListener(receiveModuleData);
@@ -21,25 +24,28 @@ export const Table: FC = () => {
     if (Object.keys(streams).length === 0) {
       throw new Error("No streams.");
     }
-    let currentState = state;
     Object.keys(streams).forEach((stream, idx) => {
       const latestState = getLatestData(streams, stream);
       if (typeof latestState !== "string" && latestState !== undefined) {
         if (streams[stream].data[0].name === "estop")
-          currentState.estop = latestState.values[0];
+          setEstop(latestState.values[0]);
         if (streams[stream].data[0].name === "can.controller")
-          currentState.canController = latestState.values[0];
+          setCanController(latestState.values[0]);
         if (streams[stream].data[0].name === "safety.system.status")
-          currentState.safetySystem = latestState.values[0];
-      }
-      if (JSON.stringify(currentState) !== JSON.stringify(state)) {
-        setState(currentState);
+          setSafetySystem(latestState.values[0]);
       }
     });
   };
 
   return (
-    <TableComponent topicStats={state} tableHeaders={["Item", "Status"]} />
+    <TableComponent
+      topicStats={{
+        estop,
+        canController,
+        safetySystem,
+      }}
+      tableHeaders={["Item", "Status"]}
+    />
   );
 };
 
